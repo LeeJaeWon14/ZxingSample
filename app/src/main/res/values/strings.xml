@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">뿌슝빠슝 QR</string>
-    <string name="str_qr_check">QR CHECK</string>
+    <string name="str_qr_check">QR SCAN</string>
     <string name="str_input_hint">input any data</string>
     <string name="str_button_input">입력</string>
     <string name="str_qr_prompt">QR코드를 맞춰주세요</string>

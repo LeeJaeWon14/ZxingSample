@@ -16,5 +16,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/str_qr_check"
-        android:layout_alignParentBottom="true" />
+        android:layout_alignParentBottom="true"
+        android:layout_margin="30dp"/>
 </RelativeLayout>

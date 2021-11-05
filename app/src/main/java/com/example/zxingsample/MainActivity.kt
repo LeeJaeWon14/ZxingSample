@@ -110,9 +110,18 @@ class MainActivity : AppCompatActivity() {
 
                 dlgBinding.apply {
                     btnCreateData.setOnClickListener {
+                        if (edtCreateData.text.toString() == "") {
+                            Toast.makeText(this@MainActivity, "빈 칸은 입력할 수 없습니다.", Toast.LENGTH_SHORT).show()
+                            return@setOnClickListener
+                        }
                         val bundle = Bundle()
                         bundle.putString("data", edtCreateData.text.toString())
-                        startActivity(Intent(this@MainActivity, CreateActivity::class.java).putExtra("dataBundle", bundle))
+                        startActivity(
+                            Intent(
+                                this@MainActivity,
+                                CreateActivity::class.java
+                            ).putExtra("dataBundle", bundle)
+                        )
                     }
                 }
 
