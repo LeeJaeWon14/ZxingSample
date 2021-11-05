@@ -44,6 +44,10 @@ class MainActivity : AppCompatActivity() {
             it.contents?.let {
                 try {
                     if(it.contains("http")) {
+                        binding.apply {
+                            webView.visibility = View.VISIBLE
+                            tvQrResult.visibility = View.GONE
+                        }
                         //webView
                         binding.webView.apply {
                             webViewClient = WebViewClient()
@@ -58,7 +62,12 @@ class MainActivity : AppCompatActivity() {
                         binding.webView.loadUrl(it)
                     }
                     else {
-                        Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
+//                        Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
+                        binding.apply {
+                            webView.visibility = View.GONE
+                            tvQrResult.visibility = View.VISIBLE
+                            tvQrResult.text = it
+                        }
                     }
                 } catch (e: Exception) {
                     MyLogger.e("data error!")
@@ -114,14 +123,20 @@ class MainActivity : AppCompatActivity() {
                             Toast.makeText(this@MainActivity, "빈 칸은 입력할 수 없습니다.", Toast.LENGTH_SHORT).show()
                             return@setOnClickListener
                         }
+                        val data = when(dlgBinding.rgDataType.checkedRadioButtonId) {
+                            R.id.rb_raw -> edtCreateData.text.toString()
+                            R.id.rb_url -> "https://${edtCreateData.text.toString()}"
+                            else -> ""
+                        }
                         val bundle = Bundle()
-                        bundle.putString("data", edtCreateData.text.toString())
+                        bundle.putString("data", data)
                         startActivity(
                             Intent(
                                 this@MainActivity,
                                 CreateActivity::class.java
                             ).putExtra("dataBundle", bundle)
                         )
+                        dlg.dismiss()
                     }
                 }
 

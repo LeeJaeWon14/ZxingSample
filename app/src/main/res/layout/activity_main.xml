@@ -11,6 +11,18 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <TextView
+        android:id="@+id/tv_qr_result"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:textAlignment="center"
+        tools:text = "Text in here"
+        android:gravity="center"
+        android:textColor="@color/black"
+        android:textSize="30dp"
+        android:textIsSelectable="true"
+        android:visibility="gone" />
+
     <Button
         android:id="@+id/btn_qr"
         android:layout_width="match_parent"

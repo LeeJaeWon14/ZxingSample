@@ -1,19 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:padding="20dp">
+    <RadioGroup
+        android:id="@+id/rg_data_type"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+        <RadioButton
+            android:id="@+id/rb_raw"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text = "@string/str_data_raw" />
+        <RadioButton
+            android:id="@+id/rb_url"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text = "@string/str_data_url"
+            android:layout_marginStart="20dp" />
+    </RadioGroup>
     <EditText
         android:id="@+id/edt_create_data"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="@string/str_input_hint"
-        android:textAlignment="center" />
+        android:textAlignment="center"
+        android:layout_below="@id/rg_data_type"/>
     <Button
         android:id="@+id/btn_create_data"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/str_button_input"
-        android:textColor="@color/white" />
-</LinearLayout>
+        android:textColor="@color/white"
+        android:layout_below="@+id/edt_create_data"/>
+</RelativeLayout>
