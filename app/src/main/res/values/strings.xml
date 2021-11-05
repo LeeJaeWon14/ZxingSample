@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">뿌슝빠슝 QR</string>
+    <string name="str_qr_check">QR CHECK</string>
+    <string name="str_input_hint">input any data</string>
+    <string name="str_button_input">입력</string>
+    <string name="str_qr_prompt">QR코드를 맞춰주세요</string>
+    <string name="str_permission_denied_msg">권한을 허용하지 않으면 앱이 정상적으로 작동하지 않을 수 있습니다.</string>
+</resources>
