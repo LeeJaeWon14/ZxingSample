@@ -100,7 +100,7 @@ class MainActivity : AppCompatActivity() {
         TedPermission.with(this)
                 .setPermissionListener(permissionListener) //Listener set
                 .setDeniedMessage(getString(R.string.str_permission_denied_msg)) //DeniedMessage (Do not granted)
-                .setPermissions(Manifest.permission.CAMERA) //Granted
+                .setPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE) //Granted
                 .check()
     }
 

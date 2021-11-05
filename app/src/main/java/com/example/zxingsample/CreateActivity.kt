@@ -67,6 +67,17 @@ class CreateActivity : AppCompatActivity() {
                 shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
                 startActivity(Intent.createChooser(shareIntent, "Shared QR code"))
             }
+            R.id.menu_save -> {
+                val bitmap = binding.ivQr.drawable.toBitmap()
+                // insertImage() was deprecated. Find the other way.
+                MediaStore.Images.Media.insertImage(
+                    this.contentResolver,
+                    bitmap,
+                    intent.getBundleExtra("dataBundle")?.get("data").toString(),
+                    ""
+                )
+                Toast.makeText(this, "저장되었습니다.", Toast.LENGTH_SHORT).show()
+            }
             R.id.menu_back -> {
                 finish()
             }

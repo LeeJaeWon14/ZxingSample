@@ -4,6 +4,9 @@
     <item android:id="@+id/menu_share"
         android:title="@string/str_menu_share"
         app:showAsAction="never" />
+    <item android:id="@+id/menu_save"
+        android:title="@string/str_menu_save"
+        app:showAsAction="never" />
     <item android:id="@+id/menu_back"
         android:title="@string/str_menu_back"
         app:showAsAction="never" />
