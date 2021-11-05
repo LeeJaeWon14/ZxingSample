@@ -7,4 +7,6 @@
     <string name="str_permission_denied_msg">권한을 허용하지 않으면 앱이 정상적으로 작동하지 않을 수 있습니다.</string>
     <string name="str_data_raw">RAW</string>
     <string name="str_data_url">URL</string>
+    <string name="str_menu_share">공유</string>
+    <string name="str_menu_back">뒤로가기</string>
 </resources>
