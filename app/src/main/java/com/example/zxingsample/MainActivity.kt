@@ -41,9 +41,9 @@ class MainActivity : AppCompatActivity() {
 
         val result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
         result?.let {
-            it.contents?.let {
+            it.contents?.let { content ->
                 try {
-                    if(it.contains("http")) {
+                    if(content.contains("http")) {
                         binding.apply {
                             webView.visibility = View.VISIBLE
                             tvQrResult.visibility = View.GONE
@@ -59,21 +59,23 @@ class MainActivity : AppCompatActivity() {
                                 setSupportZoom(true)
                             }
                         }
-                        binding.webView.loadUrl(it)
+                        binding.webView.loadUrl(content)
                     }
                     else {
 //                        Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
                         binding.apply {
                             webView.visibility = View.GONE
                             tvQrResult.visibility = View.VISIBLE
-                            tvQrResult.text = it
+                            tvQrResult.text = content
                         }
                     }
                 } catch (e: Exception) {
                     MyLogger.e("data error!")
+                    Toast.makeText(this, getString(R.string.str_data_error), Toast.LENGTH_SHORT).show()
                 }
             } ?: {
                 MyLogger.e("QR has no data.")
+                Toast.makeText(this, getString(R.string.str_unknown_error), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -81,8 +83,8 @@ class MainActivity : AppCompatActivity() {
     private fun qrInit() {
         qrIntent = IntentIntegrator(this)
         qrIntent.setPrompt(getString(R.string.str_qr_prompt))
-//        qrIntent.setCaptureActivity()
-        qrIntent.setOrientationLocked(true)
+        qrIntent.captureActivity = EmptyActivity::class.java
+//        qrIntent.setOrientationLocked(true)
         qrIntent.initiateScan()
     }
 
@@ -91,7 +93,8 @@ class MainActivity : AppCompatActivity() {
     private fun checkPermission() {
         val permissionListener : PermissionListener = object : PermissionListener {
             override fun onPermissionGranted() { //권한 있음
-                Toast.makeText(this@MainActivity, "권한 허용", Toast.LENGTH_SHORT).show()
+//                Toast.makeText(this@MainActivity, "권한 허용", Toast.LENGTH_SHORT).show()
+                // no-op
             }
             override fun onPermissionDenied(deniedPermissions: MutableList<String>?) { //권한 없음
                 Toast.makeText(this@MainActivity, "권한 거부", Toast.LENGTH_SHORT).show()
@@ -120,7 +123,7 @@ class MainActivity : AppCompatActivity() {
                 dlgBinding.apply {
                     btnCreateData.setOnClickListener {
                         if (edtCreateData.text.toString() == "") {
-                            Toast.makeText(this@MainActivity, "빈 칸은 입력할 수 없습니다.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@MainActivity, getString(R.string.str_do_not_empty_input), Toast.LENGTH_SHORT).show()
                             return@setOnClickListener
                         }
                         val data = when(dlgBinding.rgDataType.checkedRadioButtonId) {
@@ -146,13 +149,20 @@ class MainActivity : AppCompatActivity() {
 
         return true
     }
-//
-//    override fun onBackPressed() {
-//        if(binding.webView.canGoBack()) {
-//            binding.webView.goBack()
-//        }
-//        else {
-//            finish()
-//        }
-//    }
+
+    private var time : Long = 0
+    override fun onBackPressed() {
+        if(binding.webView.canGoBack()) {
+            binding.webView.goBack()
+        }
+        else {
+            if(System.currentTimeMillis() - time >= 2000) {
+                time = System.currentTimeMillis()
+                Toast.makeText(this@MainActivity, getString(R.string.str_one_more_press_exit), Toast.LENGTH_SHORT).show()
+            }
+            else if(System.currentTimeMillis() - time < 2000) {
+                this.finishAffinity()
+            }
+        }
+    }
 }
