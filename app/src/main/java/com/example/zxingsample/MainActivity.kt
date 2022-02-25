@@ -126,7 +126,7 @@ class MainActivity : AppCompatActivity() {
                             Toast.makeText(this@MainActivity, getString(R.string.str_do_not_empty_input), Toast.LENGTH_SHORT).show()
                             return@setOnClickListener
                         }
-                        val data = when(dlgBinding.rgDataType.checkedRadioButtonId) {
+                        val data = when(rgDataType.checkedRadioButtonId) {
                             R.id.rb_raw -> edtCreateData.text.toString()
                             R.id.rb_url -> "https://${edtCreateData.text.toString()}"
                             else -> ""
