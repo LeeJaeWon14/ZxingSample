@@ -30,18 +30,23 @@ class CreateActivity : AppCompatActivity() {
         setContentView(binding.root)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
+        supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            title = getString(R.string.str_create_qr_label)
+        }
+
         val bundle = intent.getBundleExtra("dataBundle")
         bundle?.let {
-            createQR(binding.ivQr, it.getString("data")!!)
+            createQR(binding.ivQr, it.getString("data"))
         } ?: run {
-            Toast.makeText(this@CreateActivity, "Data를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@CreateActivity, getString(R.string.str_not_found_data), Toast.LENGTH_SHORT).show()
             Handler(Looper.getMainLooper()).postDelayed(Runnable {
                 onBackPressed()
             }, 500)
         }
     }
 
-    private fun createQR(imv: ImageView, data: String) {
+    private fun createQR(imv: ImageView, data: String?) {
         val multiFormatWriter = MultiFormatWriter()
         try {
             val bitMatrix = multiFormatWriter.encode(data, BarcodeFormat.QR_CODE, 200, 200)
@@ -76,10 +81,10 @@ class CreateActivity : AppCompatActivity() {
                     intent.getBundleExtra("dataBundle")?.get("data").toString(),
                     ""
                 )
-                Toast.makeText(this, "저장되었습니다.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.str_save_success), Toast.LENGTH_SHORT).show()
             }
-            R.id.menu_back -> {
-                finish()
+            android.R.id.home -> {
+                onBackPressed()
             }
         }
 

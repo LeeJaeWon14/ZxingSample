@@ -10,4 +10,11 @@
     <string name="str_menu_share">공유하기</string>
     <string name="str_menu_save">저장하기</string>
     <string name="str_menu_back">뒤로가기</string>
+    <string name="str_do_not_empty_input">빈 칸은 입력할 수 없습니다.</string>
+    <string name="str_one_more_press_exit">한번 더 누르면 종료합니다</string>
+    <string name="str_unknown_error">알수없는 오류가 발생했습니다.</string>
+    <string name="str_data_error">잘못된 데이터입니다.</string>
+    <string name="str_not_found_data">Data를 찾을 수 없습니다.</string>
+    <string name="str_create_qr_label">Create QR code</string>
+    <string name="str_save_success">저장되었습니다.</string>
 </resources>
