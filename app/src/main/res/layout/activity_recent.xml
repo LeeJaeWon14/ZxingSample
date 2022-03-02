@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".RecentActivity">
+
+    <LinearLayout
+        android:id="@+id/ll_label_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_alignParentTop="true" >
+        <TextView
+            style="@style/TextLabel"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:text="시간" />
+        <TextView
+            style="@style/TextLabel"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:text="내용" />
+    </LinearLayout>
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_recent_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        android:layout_below="@+id/ll_label_layout"/>
+
+</RelativeLayout>
