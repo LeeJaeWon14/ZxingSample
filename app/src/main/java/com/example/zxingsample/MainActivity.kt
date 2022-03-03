@@ -3,7 +3,6 @@ package com.example.zxingsample
 import android.Manifest
 import android.content.Intent
 import android.content.pm.ActivityInfo
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -12,13 +11,15 @@ import android.webkit.WebSettings
 import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import com.example.zxingsample.databinding.ActivityMainBinding
 import com.example.zxingsample.databinding.LayoutInputDialogBinding
 import com.example.zxingsample.util.MyLogger
 import com.google.zxing.integration.android.IntentIntegrator
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.TedPermission
-import java.lang.Exception
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanOptions
 
 
 class MainActivity : AppCompatActivity() {
@@ -36,56 +37,52 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        val result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
-        result?.let {
-            it.contents?.let { content ->
-                try {
-                    if(content.contains("http")) {
-                        binding.apply {
-                            webView.visibility = View.VISIBLE
-                            tvQrResult.visibility = View.GONE
-                        }
-                        //webView
-                        binding.webView.apply {
-                            webViewClient = WebViewClient()
-                            settings.apply {
-                                javaScriptEnabled = true
-                                loadWithOverviewMode = true
-                                cacheMode = WebSettings.LOAD_DEFAULT
-                                builtInZoomControls = true
-                                setSupportZoom(true)
-                            }
-                        }
-                        binding.webView.loadUrl(content)
+    // activityForResult() is deprecated, replace with registerForActivityResult()
+    private val  barcodeLauncher = registerForActivityResult(ScanContract()) {
+        it.contents?.let { content ->
+            try {
+                if(content.contains("http")) {
+                    binding.apply {
+                        webView.visibility = View.VISIBLE
+                        tvQrResult.visibility = View.GONE
                     }
-                    else {
-//                        Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
-                        binding.apply {
-                            webView.visibility = View.GONE
-                            tvQrResult.visibility = View.VISIBLE
-                            tvQrResult.text = content
+                    //webView
+                    binding.webView.apply {
+                        webViewClient = WebViewClient()
+                        settings.apply {
+                            javaScriptEnabled = true
+                            loadWithOverviewMode = true
+                            cacheMode = WebSettings.LOAD_DEFAULT
+                            setSupportZoom(true)
+                            builtInZoomControls = true
                         }
                     }
-                } catch (e: Exception) {
-                    MyLogger.e("data error!")
-                    Toast.makeText(this, getString(R.string.str_data_error), Toast.LENGTH_SHORT).show()
+                    binding.webView.loadUrl(content)
                 }
-            } ?: {
-                MyLogger.e("QR has no data.")
-                Toast.makeText(this, getString(R.string.str_unknown_error), Toast.LENGTH_SHORT).show()
+                else {
+                    binding.apply {
+                        webView.visibility = View.GONE
+                        tvQrResult.visibility = View.VISIBLE
+                        tvQrResult.text = content
+                    }
+                }
+            } catch (e: Exception) {
+                MyLogger.e("data error!")
+                Toast.makeText(this, getString(R.string.str_data_error), Toast.LENGTH_SHORT).show()
             }
+        } ?: run {
+            MyLogger.e("QR has no data.")
+            Toast.makeText(this, getString(R.string.str_unknown_error), Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun qrInit() {
-        qrIntent = IntentIntegrator(this)
-        qrIntent.setPrompt(getString(R.string.str_qr_prompt))
-        qrIntent.captureActivity = EmptyActivity::class.java
-//        qrIntent.setOrientationLocked(true)
-        qrIntent.initiateScan()
+        val qrOptions = ScanOptions().apply {
+            setPrompt(getString(R.string.str_qr_prompt))
+            setBeepEnabled(false)
+            captureActivity = EmptyActivity::class.java
+        }
+        barcodeLauncher.launch(qrOptions)
     }
 
     //permission check
