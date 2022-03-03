@@ -6,8 +6,9 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.zxingsample.R
+import com.example.zxingsample.room.RecordEntity
 
-class RecordListAdapter(private val list: List<*>) : RecyclerView.Adapter<RecordListAdapter.RecordListViewHolder>() {
+class RecordListAdapter(private val list: List<RecordEntity>) : RecyclerView.Adapter<RecordListAdapter.RecordListViewHolder>() {
     class RecordListViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvTime = view.findViewById<TextView>(R.id.tv_time)
         val tvContent = view.findViewById<TextView>(R.id.tv_content)

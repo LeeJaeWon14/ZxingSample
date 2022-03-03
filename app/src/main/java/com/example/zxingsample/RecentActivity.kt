@@ -2,6 +2,7 @@ package com.example.zxingsample
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.zxingsample.databinding.ActivityRecentBinding
 
 class RecentActivity : AppCompatActivity() {
@@ -11,7 +12,10 @@ class RecentActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.apply {
-
+            rvRecentList.apply {
+                layoutManager = LinearLayoutManager(this@RecentActivity)
+//                adapter = RecordListAdapter()
+            }
         }
     }
 }

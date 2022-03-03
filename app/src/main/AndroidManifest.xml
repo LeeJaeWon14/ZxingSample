@@ -13,7 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ZxingSample"
         android:usesCleartextTraffic="true">
-        <activity android:name=".RecentActivity"></activity>
+        <activity android:name=".RecentActivity" />
         <activity android:name=".CreateActivity" />
         <activity android:name=".MainActivity">
             <intent-filter>
