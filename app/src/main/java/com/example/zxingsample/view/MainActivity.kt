@@ -1,4 +1,4 @@
-package com.example.zxingsample
+package com.example.zxingsample.view
 
 import android.Manifest
 import android.content.Intent
@@ -12,19 +12,24 @@ import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.example.zxingsample.R
 import com.example.zxingsample.databinding.ActivityMainBinding
 import com.example.zxingsample.databinding.LayoutInputDialogBinding
-import com.example.zxingsample.util.MyLogger
-import com.google.zxing.integration.android.IntentIntegrator
+import com.example.zxingsample.room.MyRoomDatabase
+import com.example.zxingsample.room.RecordEntity
+import com.example.zxingsample.util.Log
+import com.example.zxingsample.util.MyDateUtil
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.TedPermission
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding : ActivityMainBinding
-    private lateinit var qrIntent : IntentIntegrator
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -40,6 +45,7 @@ class MainActivity : AppCompatActivity() {
     // activityForResult() is deprecated, replace with registerForActivityResult()
     private val  barcodeLauncher = registerForActivityResult(ScanContract()) {
         it.contents?.let { content ->
+            saveRecord(content)
             try {
                 if(content.contains("http")) {
                     binding.apply {
@@ -67,11 +73,11 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             } catch (e: Exception) {
-                MyLogger.e("data error!")
+                Log.e("data error!")
                 Toast.makeText(this, getString(R.string.str_data_error), Toast.LENGTH_SHORT).show()
             }
         } ?: run {
-            MyLogger.e("QR has no data.")
+            Log.e("QR has no data.")
             Toast.makeText(this, getString(R.string.str_unknown_error), Toast.LENGTH_SHORT).show()
         }
     }
@@ -142,6 +148,9 @@ class MainActivity : AppCompatActivity() {
 
                 dlg.show()
             }
+            R.id.menu_recent -> {
+                startActivity(Intent(this, RecentActivity::class.java))
+            }
         }
 
         return true
@@ -160,6 +169,18 @@ class MainActivity : AppCompatActivity() {
             else if(System.currentTimeMillis() - time < 2000) {
                 this.finishAffinity()
             }
+        }
+    }
+
+    private fun saveRecord(content: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val entity = RecordEntity(
+                0,
+                MyDateUtil.getDate(MyDateUtil.HANGUEL),
+                content
+            )
+            MyRoomDatabase.getInstance(this@MainActivity).getRoomDAO()
+                .insertRecord(entity)
         }
     }
 }

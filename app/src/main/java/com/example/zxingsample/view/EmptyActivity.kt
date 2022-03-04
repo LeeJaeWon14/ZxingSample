@@ -1,4 +1,4 @@
-package com.example.zxingsample
+package com.example.zxingsample.view
 
 import com.journeyapps.barcodescanner.CaptureActivity
 

@@ -13,16 +13,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ZxingSample"
         android:usesCleartextTraffic="true">
-        <activity android:name=".RecentActivity" />
-        <activity android:name=".CreateActivity" />
-        <activity android:name=".MainActivity">
+        <activity android:name=".view.RecentActivity" />
+        <activity android:name=".view.CreateActivity" />
+        <activity android:name=".view.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".EmptyActivity"
+        <activity android:name=".view.EmptyActivity"
             android:screenOrientation="portrait" />
     </application>
 

@@ -1,11 +1,10 @@
-package com.example.zxingsample
+package com.example.zxingsample.view
 
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -14,13 +13,14 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toBitmap
+import com.example.zxingsample.R
 import com.example.zxingsample.databinding.ActivityCreateBinding
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
 import com.journeyapps.barcodescanner.BarcodeEncoder
 import java.io.ByteArrayOutputStream
-import java.lang.Exception
 
 class CreateActivity : AppCompatActivity() {
     private lateinit var binding : ActivityCreateBinding

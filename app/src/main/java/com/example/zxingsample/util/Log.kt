@@ -2,7 +2,7 @@ package com.example.zxingsample.util
 
 import android.util.Log
 
-class MyLogger {
+class Log {
     companion object {
         const val TAG = "Custom Log"
 
