@@ -37,6 +37,9 @@ class MainActivity : AppCompatActivity() {
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         checkPermission()
+        intent.getStringExtra("RecentRecord")?.let {
+            processingData(it)
+        }
         binding.btnQr.setOnClickListener {
             qrInit()
         }
@@ -45,37 +48,7 @@ class MainActivity : AppCompatActivity() {
     // activityForResult() is deprecated, replace with registerForActivityResult()
     private val  barcodeLauncher = registerForActivityResult(ScanContract()) {
         it.contents?.let { content ->
-            saveRecord(content)
-            try {
-                if(content.contains("http")) {
-                    binding.apply {
-                        webView.visibility = View.VISIBLE
-                        tvQrResult.visibility = View.GONE
-                    }
-                    //webView
-                    binding.webView.apply {
-                        webViewClient = WebViewClient()
-                        settings.apply {
-                            javaScriptEnabled = true
-                            loadWithOverviewMode = true
-                            cacheMode = WebSettings.LOAD_DEFAULT
-                            setSupportZoom(true)
-                            builtInZoomControls = true
-                        }
-                    }
-                    binding.webView.loadUrl(content)
-                }
-                else {
-                    binding.apply {
-                        webView.visibility = View.GONE
-                        tvQrResult.visibility = View.VISIBLE
-                        tvQrResult.text = content
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e("data error!")
-                Toast.makeText(this, getString(R.string.str_data_error), Toast.LENGTH_SHORT).show()
-            }
+            processingData(content)
         } ?: run {
             Log.e("QR has no data.")
             Toast.makeText(this, getString(R.string.str_unknown_error), Toast.LENGTH_SHORT).show()
@@ -181,6 +154,40 @@ class MainActivity : AppCompatActivity() {
             )
             MyRoomDatabase.getInstance(this@MainActivity).getRoomDAO()
                 .insertRecord(entity)
+        }
+    }
+
+    private fun processingData(content: String) {
+        saveRecord(content)
+        try {
+            if(content.contains("http")) {
+                binding.apply {
+                    webView.visibility = View.VISIBLE
+                    tvQrResult.visibility = View.GONE
+                }
+                //webView
+                binding.webView.apply {
+                    webViewClient = WebViewClient()
+                    settings.apply {
+                        javaScriptEnabled = true
+                        loadWithOverviewMode = true
+                        cacheMode = WebSettings.LOAD_DEFAULT
+                        setSupportZoom(true)
+                        builtInZoomControls = true
+                    }
+                }
+                binding.webView.loadUrl(content)
+            }
+            else {
+                binding.apply {
+                    webView.visibility = View.GONE
+                    tvQrResult.visibility = View.VISIBLE
+                    tvQrResult.text = content
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("data error!")
+            Toast.makeText(this, getString(R.string.str_data_error), Toast.LENGTH_SHORT).show()
         }
     }
 }
