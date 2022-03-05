@@ -8,13 +8,13 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.webkit.WebSettings
-import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.zxingsample.R
 import com.example.zxingsample.databinding.ActivityMainBinding
 import com.example.zxingsample.databinding.LayoutInputDialogBinding
+import com.example.zxingsample.network.MyWebViewClient
 import com.example.zxingsample.room.MyRoomDatabase
 import com.example.zxingsample.room.RecordEntity
 import com.example.zxingsample.util.Log
@@ -167,7 +167,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 //webView
                 binding.webView.apply {
-                    webViewClient = WebViewClient()
+                    webViewClient = MyWebViewClient()
                     settings.apply {
                         javaScriptEnabled = true
                         loadWithOverviewMode = true
