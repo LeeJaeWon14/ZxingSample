@@ -9,8 +9,10 @@ import android.view.MenuItem
 import android.view.View
 import android.webkit.WebSettings
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.example.zxingsample.Constants.REQUEST_CODE_FOR_RECENT
 import com.example.zxingsample.R
 import com.example.zxingsample.databinding.ActivityMainBinding
 import com.example.zxingsample.databinding.LayoutInputDialogBinding
@@ -37,11 +39,12 @@ class MainActivity : AppCompatActivity() {
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         checkPermission()
-        intent.getStringExtra("RecentRecord")?.let {
-            processingData(it)
-        }
+//        intent.getStringExtra("RecentRecord")?.let {
+//            processingData(it)
+//        }
         binding.btnQr.setOnClickListener {
             qrInit()
+//            recentLauncher.launch(Intent(this, RecentActivity::class.java))
         }
     }
 
@@ -52,6 +55,18 @@ class MainActivity : AppCompatActivity() {
         } ?: run {
             Log.e("QR has no data.")
             Toast.makeText(this, getString(R.string.str_unknown_error), Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private val recentLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        result.apply {
+            when(resultCode) {
+                REQUEST_CODE_FOR_RECENT -> {
+                    Log.e("enter ActivityResult")
+                    data?.getStringExtra("RecentRecord")?.let { processingData(it) }
+                }
+                else -> { /* no-op */}
+            }
         }
     }
 
@@ -122,7 +137,8 @@ class MainActivity : AppCompatActivity() {
                 dlg.show()
             }
             R.id.menu_recent -> {
-                startActivity(Intent(this, RecentActivity::class.java))
+//                startActivity(Intent(this, RecentActivity::class.java))
+                recentLauncher.launch(Intent(this, RecentActivity::class.java))
             }
         }
 
