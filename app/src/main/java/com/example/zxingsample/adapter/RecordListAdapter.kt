@@ -16,7 +16,7 @@ import com.example.zxingsample.view.MainActivity
 import com.example.zxingsample.view.RecentActivity
 
 class RecordListAdapter(private val list: List<RecordEntity>) : RecyclerView.Adapter<RecordListAdapter.RecordListViewHolder>() {
-    private val recordList = list.toMutableList()
+    private val recordList get() = list.toMutableList().sortedByDescending { it.time }
 
     class RecordListViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvTime: TextView = view.findViewById(R.id.tv_time)
