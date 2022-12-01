@@ -21,6 +21,19 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:host="main"
+                    android:scheme="zxingsample" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <data android:scheme="http" android:host="www.example.com" />
+                <data android:scheme="https" />
+            </intent-filter>
         </activity>
         <activity android:name=".view.EmptyActivity"
             android:screenOrientation="portrait" />

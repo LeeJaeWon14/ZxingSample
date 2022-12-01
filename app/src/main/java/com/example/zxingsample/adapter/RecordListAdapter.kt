@@ -36,9 +36,6 @@ class RecordListAdapter(private val list: List<RecordEntity>) : RecyclerView.Ada
             llItemLayout.apply {
                 setOnClickListener {
                     if(context is RecentActivity) Log.e("this activity is RecentActivity")
-//                    context.startActivity(Intent(context, MainActivity::class.java).apply {
-//                        putExtra("RecentRecord", recordList[position].data)
-//                    })
                     (context as Activity).run {
                         setResult(
                                 Constants.REQUEST_CODE_FOR_RECENT,

@@ -39,17 +39,27 @@ class MainActivity : AppCompatActivity() {
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         checkPermission()
-//        intent.getStringExtra("RecentRecord")?.let {
-//            processingData(it)
-//        }
+
+        when(intent.action) {
+            Intent.ACTION_VIEW -> {
+                val uri = intent.data
+                uri?.let {
+                    val first = it.getQueryParameter("first")
+                    val second = it.getQueryParameter("second")
+
+                    Log.e("uri is not null")
+                    Log.e("$first / $second")
+                    Toast.makeText(this, "$first / $second", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
         binding.btnQr.setOnClickListener {
             qrInit()
-//            recentLauncher.launch(Intent(this, RecentActivity::class.java))
         }
     }
 
     // activityForResult() is deprecated, replace with registerForActivityResult()
-    private val  barcodeLauncher = registerForActivityResult(ScanContract()) {
+    private val barcodeLauncher = registerForActivityResult(ScanContract()) {
         it.contents?.let { content ->
             processingData(content)
         } ?: run {
@@ -137,7 +147,6 @@ class MainActivity : AppCompatActivity() {
                 dlg.show()
             }
             R.id.menu_recent -> {
-//                startActivity(Intent(this, RecentActivity::class.java))
                 recentLauncher.launch(Intent(this, RecentActivity::class.java))
             }
         }
