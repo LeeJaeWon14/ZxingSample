@@ -7,15 +7,16 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.webkit.DownloadListener
 import android.webkit.WebSettings
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import com.example.zxingsample.Constants.REQUEST_CODE_FOR_RECENT
 import com.example.zxingsample.R
 import com.example.zxingsample.databinding.ActivityMainBinding
 import com.example.zxingsample.databinding.LayoutInputDialogBinding
+import com.example.zxingsample.network.MyChromeClient
 import com.example.zxingsample.network.MyWebViewClient
 import com.example.zxingsample.room.MyRoomDatabase
 import com.example.zxingsample.room.RecordEntity
@@ -30,7 +31,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), DownloadListener {
     private lateinit var binding : ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,7 +72,7 @@ class MainActivity : AppCompatActivity() {
     private val recentLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         result.apply {
             when(resultCode) {
-                REQUEST_CODE_FOR_RECENT -> {
+                RESULT_OK -> {
                     Log.e("enter ActivityResult")
                     data?.getStringExtra("RecentRecord")?.let { processingData(it) }
                 }
@@ -182,10 +183,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun requestPermission() : Boolean {
+        val permissions = arrayOf(
+            Manifest.permission.CAMERA
+        )
+        return TedPermission.isGranted(this, *permissions)
+    }
+
     private fun processingData(content: String) {
         saveRecord(content)
         try {
-            if(content.contains("http")) {
+            if(content.startsWith("https")) {
                 binding.apply {
                     webView.visibility = View.VISIBLE
                     tvQrResult.visibility = View.GONE
@@ -193,6 +201,8 @@ class MainActivity : AppCompatActivity() {
                 //webView
                 binding.webView.apply {
                     webViewClient = MyWebViewClient()
+                    webChromeClient = MyChromeClient()
+//                    setDownloadListener(this@MainActivity)
                     settings.apply {
                         javaScriptEnabled = true
                         loadWithOverviewMode = true
@@ -200,8 +210,12 @@ class MainActivity : AppCompatActivity() {
                         setSupportZoom(true)
                         builtInZoomControls = true
                     }
+                    loadUrl(content)
                 }
-                binding.webView.loadUrl(content)
+//                binding.webView.loadUrl(content)
+            }
+            if(content.startsWith("http")) {
+                Toast.makeText(this, getString(R.string.str_not_allowed_http), Toast.LENGTH_SHORT).show()
             }
             else {
                 binding.apply {
@@ -211,8 +225,12 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         } catch (e: Exception) {
-            Log.e("data error!")
+            Log.e("data error! >> $e")
             Toast.makeText(this, getString(R.string.str_data_error), Toast.LENGTH_SHORT).show()
         }
+    }
+
+    override fun onDownloadStart(p0: String?, p1: String?, p2: String?, p3: String?, p4: Long) {
+
     }
 }

@@ -1,6 +1,7 @@
 package com.example.zxingsample.adapter
 
 import android.app.Activity
+import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
@@ -8,7 +9,6 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.zxingsample.Constants
 import com.example.zxingsample.R
 import com.example.zxingsample.room.RecordEntity
 import com.example.zxingsample.util.Log
@@ -38,7 +38,7 @@ class RecordListAdapter(private val list: List<RecordEntity>) : RecyclerView.Ada
                     if(context is RecentActivity) Log.e("this activity is RecentActivity")
                     (context as Activity).run {
                         setResult(
-                                Constants.REQUEST_CODE_FOR_RECENT,
+                                RESULT_OK,
                                 Intent(context, MainActivity::class.java).apply {
                                     putExtra("RecentRecord", recordList[position].data)
                                 }
