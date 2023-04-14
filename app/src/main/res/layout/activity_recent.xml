@@ -40,7 +40,7 @@
         android:layout_height="wrap_content"
         android:textAlignment="center"
         android:textSize="30dp"
-        android:text="기록이 없습니다."
+        android:text="@string/msg_no_recent_data"
         android:fontFamily="@font/kblz"
         android:layout_centerInParent="true"
         android:visibility="gone"/>

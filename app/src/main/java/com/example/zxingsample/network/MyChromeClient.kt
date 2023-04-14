@@ -5,6 +5,7 @@ import android.webkit.JsResult
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebView
+import androidx.appcompat.app.AlertDialog
 
 class MyChromeClient : WebChromeClient()  {
     override fun onJsAlert(
@@ -13,6 +14,17 @@ class MyChromeClient : WebChromeClient()  {
         message: String?,
         result: JsResult?
     ): Boolean {
+        view?.context?.let { ctx ->
+            AlertDialog.Builder(ctx)
+                .setMessage(message.orEmpty())
+                .setPositiveButton("확인") { _, _ ->
+                    result?.confirm()
+                }
+                .setNegativeButton("취소") { _, _ ->
+                    result?.cancel()
+                }
+                .show()
+        }
 
         return false
     }

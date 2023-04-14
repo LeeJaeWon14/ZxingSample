@@ -4,12 +4,9 @@ import android.app.Activity
 import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.zxingsample.R
+import com.example.zxingsample.databinding.LayoutRecentItemBinding
 import com.example.zxingsample.room.RecordEntity
 import com.example.zxingsample.util.Log
 import com.example.zxingsample.view.MainActivity
@@ -18,35 +15,37 @@ import com.example.zxingsample.view.RecentActivity
 class RecordListAdapter(private val list: List<RecordEntity>) : RecyclerView.Adapter<RecordListAdapter.RecordListViewHolder>() {
     private val recordList get() = list.toMutableList().sortedByDescending { it.time }
 
-    class RecordListViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val tvTime: TextView = view.findViewById(R.id.tv_time)
-        val tvContent: TextView = view.findViewById(R.id.tv_content)
-        val llItemLayout: LinearLayout = view.findViewById(R.id.ll_item_layout)
+    class RecordListViewHolder(private val binding: LayoutRecentItemBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(record: RecordEntity) {
+            binding.apply {
+                tvTime.text = record.time
+                tvContent.text = record.data
+                llItemLayout.apply {
+                    setOnClickListener {
+                        if(context is RecentActivity) Log.e("this activity is RecentActivity")
+                        (context as Activity).run {
+                            setResult(
+                                RESULT_OK,
+                                Intent(context, MainActivity::class.java).apply {
+                                    putExtra("RecentRecord", record.data)
+                                }
+                            )
+                            finish()
+                        }
+                    }
+                }
+            }
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecordListViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.layout_recent_item, parent, false)
-        return RecordListViewHolder(view)
+        val binding = LayoutRecentItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return RecordListViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: RecordListViewHolder, position: Int) {
         holder.apply {
-            tvTime.text = recordList[position].time
-            tvContent.text = recordList[position].data
-            llItemLayout.apply {
-                setOnClickListener {
-                    if(context is RecentActivity) Log.e("this activity is RecentActivity")
-                    (context as Activity).run {
-                        setResult(
-                                RESULT_OK,
-                                Intent(context, MainActivity::class.java).apply {
-                                    putExtra("RecentRecord", recordList[position].data)
-                                }
-                        )
-                        finish()
-                    }
-                }
-            }
+            bind(list[position])
         }
     }
 

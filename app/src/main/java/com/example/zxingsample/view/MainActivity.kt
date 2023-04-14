@@ -1,8 +1,14 @@
 package com.example.zxingsample.view
 
 import android.Manifest
+import android.app.DownloadManager
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.ActivityInfo
+import android.database.Cursor
+import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -29,6 +35,7 @@ import com.journeyapps.barcodescanner.ScanOptions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.io.File
 
 
 class MainActivity : AppCompatActivity(), DownloadListener {
@@ -41,6 +48,7 @@ class MainActivity : AppCompatActivity(), DownloadListener {
 
         checkPermission()
 
+        registerReceiver(downloadCompleteReceiver, IntentFilter())
         when(intent.action) {
             Intent.ACTION_VIEW -> {
                 val uri = intent.data
@@ -57,6 +65,11 @@ class MainActivity : AppCompatActivity(), DownloadListener {
         binding.btnQr.setOnClickListener {
             qrInit()
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(downloadCompleteReceiver)
     }
 
     // activityForResult() is deprecated, replace with registerForActivityResult()
@@ -76,7 +89,10 @@ class MainActivity : AppCompatActivity(), DownloadListener {
                     Log.e("enter ActivityResult")
                     data?.getStringExtra("RecentRecord")?.let { processingData(it) }
                 }
-                else -> { /* no-op */}
+                else -> {
+                    Log.e("Unexpected error!")
+
+                }
             }
         }
     }
@@ -133,8 +149,9 @@ class MainActivity : AppCompatActivity(), DownloadListener {
                             R.id.rb_url -> "https://${edtCreateData.text.toString()}"
                             else -> ""
                         }
-                        val bundle = Bundle()
-                        bundle.putString("data", data)
+                        val bundle = Bundle().apply {
+                            putString("data", data)
+                        }
                         startActivity(
                             Intent(
                                 this@MainActivity,
@@ -191,6 +208,8 @@ class MainActivity : AppCompatActivity(), DownloadListener {
     }
 
     private fun processingData(content: String) {
+        Log.e("processingData()")
+        Log.e("content >> $content")
         saveRecord(content)
         try {
             if(content.startsWith("https")) {
@@ -202,7 +221,7 @@ class MainActivity : AppCompatActivity(), DownloadListener {
                 binding.webView.apply {
                     webViewClient = MyWebViewClient()
                     webChromeClient = MyChromeClient()
-//                    setDownloadListener(this@MainActivity)
+                    setDownloadListener(this@MainActivity)
                     settings.apply {
                         javaScriptEnabled = true
                         loadWithOverviewMode = true
@@ -214,8 +233,9 @@ class MainActivity : AppCompatActivity(), DownloadListener {
                 }
 //                binding.webView.loadUrl(content)
             }
+
             if(content.startsWith("http")) {
-                Toast.makeText(this, getString(R.string.str_not_allowed_http), Toast.LENGTH_SHORT).show()
+                if(!sslCheck(content)) throw IllegalStateException("This url is not supported ssl")
             }
             else {
                 binding.apply {
@@ -225,12 +245,73 @@ class MainActivity : AppCompatActivity(), DownloadListener {
                 }
             }
         } catch (e: Exception) {
-            Log.e("data error! >> $e")
-            Toast.makeText(this, getString(R.string.str_data_error), Toast.LENGTH_SHORT).show()
+            when (e.message) {
+                "This url is not supported ssl" -> Toast.makeText(this, getString(R.string.str_not_allowed_http), Toast.LENGTH_SHORT).show()
+                else -> {
+                    Log.e("data error! >> $e")
+                    Toast.makeText(this, getString(R.string.str_data_error), Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 
-    override fun onDownloadStart(p0: String?, p1: String?, p2: String?, p3: String?, p4: Long) {
+    private fun sslCheck(url: String) : Boolean = url.split("://")[0] == "https"
 
+    override fun onDownloadStart(url: String?, userAgent: String?, contentDisposition: String?, mimeType: String?, contentLength: Long) {
+        Log.e("""
+            
+            onDownloadStart()
+            - url: $url
+            - UserAgent: $userAgent
+            - Disposition: $contentDisposition
+            - Length: $contentLength
+        """.trimIndent())
+
+        downloadManager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        val downloadDir = File(filesDir.path.plus("/download"))
+        if(!downloadDir.exists()) downloadDir.mkdirs()
+
+        val request = DownloadManager.Request(Uri.parse(url)).apply {
+            setTitle("뿌슝빠슝.. 다운로드..")
+            setDestinationUri(Uri.fromFile(downloadDir))
+            setAllowedOverMetered(true)
+        }
+        mDownloadQueueId = downloadManager.enqueue(request)
+    }
+
+    private lateinit var downloadManager: DownloadManager
+    private var mDownloadQueueId: Long = 0
+    private val downloadCompleteReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val reference = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
+            if (mDownloadQueueId == reference) {
+                val query = DownloadManager.Query() // 다운로드 항목 조회에 필요한 정보 포함
+                query.setFilterById(reference)
+                val cursor: Cursor = downloadManager.query(query)
+                cursor.moveToFirst()
+                val columnIndex: Int = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)
+                val columnReason: Int = cursor.getColumnIndex(DownloadManager.COLUMN_REASON)
+                val status: Int = cursor.getInt(columnIndex)
+                val reason: Int = cursor.getInt(columnReason)
+                cursor.close()
+                when (status) {
+                    DownloadManager.STATUS_SUCCESSFUL -> Toast.makeText(
+                        this@MainActivity,
+                        "다운로드를 완료하였습니다.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    DownloadManager.STATUS_PAUSED -> Toast.makeText(
+                        this@MainActivity,
+                        "다운로드가 중단되었습니다.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    DownloadManager.STATUS_FAILED -> Toast.makeText(
+                        this@MainActivity,
+                        "다운로드가 취소되었습니다.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
     }
 }

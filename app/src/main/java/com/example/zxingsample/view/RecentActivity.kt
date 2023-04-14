@@ -5,6 +5,7 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.zxingsample.R
 import com.example.zxingsample.adapter.RecordListAdapter
 import com.example.zxingsample.databinding.ActivityRecentBinding
 import com.example.zxingsample.room.MyRoomDatabase
@@ -21,8 +22,10 @@ class RecentActivity : AppCompatActivity() {
         binding = ActivityRecentBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = "최근 검색 기록"
+        supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            getString(R.string.recent_title)
+        }
 
         val selectRoutine = CoroutineScope(Dispatchers.IO).async {
             MyRoomDatabase.getInstance(this@RecentActivity).getRoomDAO()
