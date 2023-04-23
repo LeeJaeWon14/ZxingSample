@@ -2,9 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item android:id="@+id/menu_create"
-        android:title="QR 생성"
-        app:showAsAction="always" />
+        android:title="@string/menu_make_qr_"
+        app:showAsAction="ifRoom" />
     <item android:id="@+id/menu_recent"
-        android:title="최근 기록"
-        app:showAsAction="always" />
+        android:title="@string/menu_recent_record"
+        app:showAsAction="ifRoom" />
+    <item
+        android:title="@string/menu_downloaded_list"
+        app:showAsAction="ifRoom" />
 </menu>

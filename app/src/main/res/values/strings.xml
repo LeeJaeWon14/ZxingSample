@@ -21,4 +21,8 @@
 
     <string name="msg_no_recent_data">기록이 없습니다.</string>
     <string name="recent_title">최근 검색 기록</string>
+
+    <string name="menu_make_qr_">QR 생성</string>
+    <string name="menu_recent_record">최근 기록</string>
+    <string name="menu_downloaded_list">다운로드 기록</string>
 </resources>
