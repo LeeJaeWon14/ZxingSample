@@ -1,11 +1,9 @@
 package com.example.zxingsample.network
 
 import android.net.Uri
-import android.webkit.JsResult
-import android.webkit.ValueCallback
-import android.webkit.WebChromeClient
-import android.webkit.WebView
+import android.webkit.*
 import androidx.appcompat.app.AlertDialog
+import com.example.zxingsample.util.Log
 
 class MyChromeClient : WebChromeClient()  {
     override fun onJsAlert(
@@ -27,6 +25,36 @@ class MyChromeClient : WebChromeClient()  {
         }
 
         return false
+    }
+
+    override fun onJsConfirm(
+        view: WebView?,
+        url: String?,
+        message: String?,
+        result: JsResult?
+    ): Boolean {
+        view?.context?.let { ctx ->
+            AlertDialog.Builder(ctx)
+                .setMessage(message)
+                .setPositiveButton("확인") { _, _ ->
+                    result?.confirm()
+                }
+                .setNegativeButton("취소") { _, _ ->
+                    result?.confirm()
+                }
+        }
+
+        return super.onJsConfirm(view, url, message, result)
+    }
+
+    override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
+        Log.e(String.format(
+            "%s (Line: %s) : %s",
+            consoleMessage?.sourceId(),
+            consoleMessage?.lineNumber(),
+            consoleMessage?.message()
+        ))
+        return super.onConsoleMessage(consoleMessage)
     }
 
     override fun onShowFileChooser(

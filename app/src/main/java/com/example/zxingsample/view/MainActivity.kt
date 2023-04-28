@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity(), DownloadListener {
 
         checkPermission()
 
-        registerReceiver(downloadCompleteReceiver, IntentFilter())
+        registerReceiver(downloadCompleteReceiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
         when(intent.action) {
             Intent.ACTION_VIEW -> {
                 val uri = intent.data
@@ -109,6 +109,11 @@ class MainActivity : AppCompatActivity(), DownloadListener {
     //permission check
     //출처 : https://github.com/ParkSangGwon/TedPermission
     private fun checkPermission() {
+        val permissionList = arrayOf(
+            Manifest.permission.CAMERA,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        )
         val permissionListener : PermissionListener = object : PermissionListener {
             override fun onPermissionGranted() { //권한 있음
 //                Toast.makeText(this@MainActivity, "권한 허용", Toast.LENGTH_SHORT).show()
@@ -121,7 +126,7 @@ class MainActivity : AppCompatActivity(), DownloadListener {
         TedPermission.with(this)
                 .setPermissionListener(permissionListener) //Listener set
                 .setDeniedMessage(getString(R.string.str_permission_denied_msg)) //DeniedMessage (Do not granted)
-                .setPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE) //Granted
+                .setPermissions(*permissionList) //Granted
                 .check()
     }
 
@@ -166,6 +171,21 @@ class MainActivity : AppCompatActivity(), DownloadListener {
             }
             R.id.menu_recent -> {
                 recentLauncher.launch(Intent(this, RecentActivity::class.java))
+            }
+            R.id.menu_download_list -> {
+                val fileList = mutableListOf<String>()
+                File(getExternalFilesDir(null)?.path.plus("/ZxingSample")).listFiles()?.forEach {
+                    fileList.add(it.name)
+                }
+                AlertDialog.Builder(this)
+                    .setItems(fileList.toTypedArray()) { _, idx ->
+                        File(getExternalFilesDir(null)?.path.plus("/ZxingSample/").plus(fileList[idx]))
+                            .run {
+                                Toast.makeText(this@MainActivity, "$name, ${length()}", Toast.LENGTH_SHORT).show()
+                            }
+                    }
+                    .setPositiveButton("닫기", null)
+                    .show()
             }
         }
 
@@ -266,15 +286,17 @@ class MainActivity : AppCompatActivity(), DownloadListener {
             - Disposition: $contentDisposition
             - Length: $contentLength
         """.trimIndent())
+        Toast.makeText(this, "다운로드를 시작합니다.", Toast.LENGTH_SHORT).show()
 
         downloadManager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-        val downloadDir = File(filesDir.path.plus("/download"))
+        val downloadDir = File(getExternalFilesDir(null)?.path.plus("/ZxingSample"))
         if(!downloadDir.exists()) downloadDir.mkdirs()
 
         val request = DownloadManager.Request(Uri.parse(url)).apply {
             setTitle("뿌슝빠슝.. 다운로드..")
             setDestinationUri(Uri.fromFile(downloadDir))
             setAllowedOverMetered(true)
+            setNotificationVisibility(View.VISIBLE)
         }
         mDownloadQueueId = downloadManager.enqueue(request)
     }
@@ -283,6 +305,7 @@ class MainActivity : AppCompatActivity(), DownloadListener {
     private var mDownloadQueueId: Long = 0
     private val downloadCompleteReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+            Log.e("downloadCompleteReceiver.. ")
             val reference = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
             if (mDownloadQueueId == reference) {
                 val query = DownloadManager.Query() // 다운로드 항목 조회에 필요한 정보 포함
@@ -297,17 +320,22 @@ class MainActivity : AppCompatActivity(), DownloadListener {
                 when (status) {
                     DownloadManager.STATUS_SUCCESSFUL -> Toast.makeText(
                         this@MainActivity,
-                        "다운로드를 완료하였습니다.",
+                        getString(R.string.str_download_done),
                         Toast.LENGTH_SHORT
                     ).show()
                     DownloadManager.STATUS_PAUSED -> Toast.makeText(
                         this@MainActivity,
-                        "다운로드가 중단되었습니다.",
+                        getString(R.string.str_download_pause),
                         Toast.LENGTH_SHORT
                     ).show()
                     DownloadManager.STATUS_FAILED -> Toast.makeText(
                         this@MainActivity,
-                        "다운로드가 취소되었습니다.",
+                        getString(R.string.str_download_cancel),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    DownloadManager.STATUS_RUNNING -> Toast.makeText(
+                        this@MainActivity,
+                        "다운로드를 진행 중입니다..",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
