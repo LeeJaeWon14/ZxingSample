@@ -46,6 +46,8 @@ class MainActivity : AppCompatActivity(), DownloadListener {
         setContentView(binding.root)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
+        downloadDir = File(getExternalFilesDir(null)?.path.plus("/ZxingSample"))
+
         checkPermission()
 
         registerReceiver(downloadCompleteReceiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
@@ -174,18 +176,28 @@ class MainActivity : AppCompatActivity(), DownloadListener {
             }
             R.id.menu_download_list -> {
                 val fileList = mutableListOf<String>()
-                File(getExternalFilesDir(null)?.path.plus("/ZxingSample")).listFiles()?.forEach {
-                    fileList.add(it.name)
+                if(!downloadDir.exists()) {
+                    Log.e("$downloadDir >> Not found directory..")
+                    return true
+                } else {
+                    Log.e("$downloadDir >> found..\n${downloadDir.listFiles() ?: "no files"}")
                 }
-                AlertDialog.Builder(this)
-                    .setItems(fileList.toTypedArray()) { _, idx ->
-                        File(getExternalFilesDir(null)?.path.plus("/ZxingSample/").plus(fileList[idx]))
-                            .run {
-                                Toast.makeText(this@MainActivity, "$name, ${length()}", Toast.LENGTH_SHORT).show()
-                            }
-                    }
-                    .setPositiveButton("닫기", null)
-                    .show()
+                downloadDir.list()?.forEach {
+//                    val file = File(downloadDir, it.path).also { Log.e("abstract file >> $it") }
+//
+//                    Log.e("file >> ${it.name}")
+//                    fileList.add(it.name)
+                    Log.e("file name >> $it")
+                }
+//                AlertDialog.Builder(this)
+//                    .setItems(fileList.toTypedArray()) { _, idx ->
+//                        File(getExternalFilesDir(null)?.path.plus("/ZxingSample/").plus(fileList[idx]))
+//                            .run {
+//                                Toast.makeText(this@MainActivity, "$name, ${length()}", Toast.LENGTH_SHORT).show()
+//                            }
+//                    }
+//                    .setPositiveButton("닫기", null)
+//                    .show()
             }
         }
 
@@ -289,7 +301,6 @@ class MainActivity : AppCompatActivity(), DownloadListener {
         Toast.makeText(this, "다운로드를 시작합니다.", Toast.LENGTH_SHORT).show()
 
         downloadManager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-        val downloadDir = File(getExternalFilesDir(null)?.path.plus("/ZxingSample"))
         if(!downloadDir.exists()) downloadDir.mkdirs()
 
         val request = DownloadManager.Request(Uri.parse(url)).apply {
@@ -299,8 +310,10 @@ class MainActivity : AppCompatActivity(), DownloadListener {
             setNotificationVisibility(View.VISIBLE)
         }
         mDownloadQueueId = downloadManager.enqueue(request)
+        Log.e("Download start!!! >> path: ${downloadDir.path}")
     }
 
+    private lateinit var downloadDir: File
     private lateinit var downloadManager: DownloadManager
     private var mDownloadQueueId: Long = 0
     private val downloadCompleteReceiver: BroadcastReceiver = object : BroadcastReceiver() {
