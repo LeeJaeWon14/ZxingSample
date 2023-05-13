@@ -11,7 +11,13 @@ import com.example.zxingsample.util.replaceHttp
 class MyWebViewClient : WebViewClient() {
     override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
         Log.e("onShouldOverrideUrlLoading()")
-        return super.shouldOverrideUrlLoading(view, request)
+//        return super.shouldOverrideUrlLoading(view, request)
+
+        return if (view?.url?.startsWith("http://") == true) {
+            view.url?.replaceHttp()?.let { view.loadUrl(it) }
+            true
+        }
+        else false
     }
     override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
         super.onPageStarted(view, url, favicon)
@@ -23,9 +29,6 @@ class MyWebViewClient : WebViewClient() {
         super.onPageFinished(view, url)
         Log.e("onPageFinished()")
         Log.e("page finish >> $url")
-        if (view?.url?.startsWith("http://") == true) {
-            view.url?.replaceHttp()?.let { view.loadUrl(it) }
-        }
     }
 
     override fun onReceivedError(
