@@ -28,6 +28,7 @@ import com.example.zxingsample.room.MyRoomDatabase
 import com.example.zxingsample.room.RecordEntity
 import com.example.zxingsample.util.Log
 import com.example.zxingsample.util.MyDateUtil
+import com.example.zxingsample.util.replaceHttp
 import com.gun0912.tedpermission.PermissionListener
 import com.gun0912.tedpermission.TedPermission
 import com.journeyapps.barcodescanner.ScanContract
@@ -244,30 +245,12 @@ class MainActivity : AppCompatActivity(), DownloadListener {
         Log.e("content >> $content")
         saveRecord(content)
         try {
-            if(content.startsWith("https")) {
-                binding.apply {
-                    webView.visibility = View.VISIBLE
-                    tvQrResult.visibility = View.GONE
-                }
-                //webView
-                binding.webView.apply {
-                    webViewClient = MyWebViewClient()
-                    webChromeClient = MyChromeClient()
-                    setDownloadListener(this@MainActivity)
-                    settings.apply {
-                        javaScriptEnabled = true
-                        loadWithOverviewMode = true
-                        cacheMode = WebSettings.LOAD_DEFAULT
-                        setSupportZoom(true)
-                        builtInZoomControls = true
-                    }
-                    loadUrl(content)
-                }
-//                binding.webView.loadUrl(content)
+            if(content.startsWith("https://")) {
+                initWebView(content)
             }
 
-            if(content.startsWith("http")) {
-                if(!sslCheck(content)) throw IllegalStateException("This url is not supported ssl")
+            else if(content.startsWith("http://")) {
+                initWebView(content.replaceHttp())
             }
             else {
                 binding.apply {
@@ -284,6 +267,28 @@ class MainActivity : AppCompatActivity(), DownloadListener {
                     Toast.makeText(this, getString(R.string.str_data_error), Toast.LENGTH_SHORT).show()
                 }
             }
+        }
+    }
+
+    private fun initWebView(url: String) {
+        Log.e("init with url >> $url")
+        binding.apply {
+            webView.visibility = View.VISIBLE
+            tvQrResult.visibility = View.GONE
+        }
+        //webView
+        binding.webView.apply {
+            webViewClient = MyWebViewClient()
+            webChromeClient = MyChromeClient()
+            setDownloadListener(this@MainActivity)
+            settings.apply {
+                javaScriptEnabled = true
+                loadWithOverviewMode = true
+                cacheMode = WebSettings.LOAD_DEFAULT
+                setSupportZoom(true)
+                builtInZoomControls = true
+            }
+            loadUrl(url)
         }
     }
 

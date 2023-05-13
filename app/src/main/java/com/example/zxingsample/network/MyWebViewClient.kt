@@ -5,19 +5,13 @@ import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.Toast
-import com.example.zxingsample.R
 import com.example.zxingsample.util.Log
+import com.example.zxingsample.util.replaceHttp
 
 class MyWebViewClient : WebViewClient() {
     override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-        super.shouldOverrideUrlLoading(view, request)
         Log.e("onShouldOverrideUrlLoading()")
-        return if (view?.url?.startsWith("https") == true) false
-        else {
-            Toast.makeText(view?.context, view?.context?.getString(R.string.str_not_allowed_http), Toast.LENGTH_SHORT).show()
-            true
-        }
+        return super.shouldOverrideUrlLoading(view, request)
     }
     override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
         super.onPageStarted(view, url, favicon)
@@ -29,6 +23,9 @@ class MyWebViewClient : WebViewClient() {
         super.onPageFinished(view, url)
         Log.e("onPageFinished()")
         Log.e("page finish >> $url")
+        if (view?.url?.startsWith("http://") == true) {
+            view.url?.replaceHttp()?.let { view.loadUrl(it) }
+        }
     }
 
     override fun onReceivedError(
@@ -46,16 +43,5 @@ class MyWebViewClient : WebViewClient() {
                 desc: ${err.description}
             """.trimIndent())
         }
-
-//        view?.url?.let { url ->
-//            // todo: It will separate to static method.
-//            if(url.startsWith("http")) {
-//                val domain = url.split("://")[1]
-//                view.loadUrl("https://".plus(domain))
-//                return
-//            }
-//        }
-
-
     }
 }
