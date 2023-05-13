@@ -3,6 +3,7 @@ package com.example.zxingsample.network
 import android.net.Uri
 import android.webkit.*
 import androidx.appcompat.app.AlertDialog
+import com.example.zxingsample.util.DialogHelper
 import com.example.zxingsample.util.Log
 
 class MyChromeClient : WebChromeClient()  {
@@ -64,5 +65,15 @@ class MyChromeClient : WebChromeClient()  {
     ): Boolean {
 
         return false
+    }
+
+    override fun onProgressChanged(view: WebView?, newProgress: Int) {
+        view?.context?.let {
+            if(!DialogHelper.progressDialog(it).isShowing)
+                DialogHelper.progressDialog(it)
+
+            if(newProgress == 100)
+                DialogHelper.progressDialog(it).dismiss()
+        }
     }
 }
