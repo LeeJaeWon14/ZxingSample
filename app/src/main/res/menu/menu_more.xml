@@ -4,6 +4,9 @@
     <item android:id="@+id/menu_create"
         android:title="@string/menu_make_qr_create"
         app:showAsAction="never" />
+    <item android:id="@+id/menu_read_image"
+        android:title="@string/menu_read_image"
+        app:showAsAction="never" />
     <item android:id="@+id/menu_recent"
         android:title="@string/menu_recent_record"
         app:showAsAction="never" />

@@ -6,9 +6,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.ActivityInfo
 import android.database.Cursor
+import android.graphics.BitmapFactory
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -16,9 +17,12 @@ import android.view.View
 import android.webkit.DownloadListener
 import android.webkit.WebSettings
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import com.example.zxingsample.R
 import com.example.zxingsample.databinding.ActivityMainBinding
 import com.example.zxingsample.databinding.LayoutInputDialogBinding
@@ -29,8 +33,12 @@ import com.example.zxingsample.room.RecordEntity
 import com.example.zxingsample.util.Log
 import com.example.zxingsample.util.MyDateUtil
 import com.example.zxingsample.util.replaceHttp
+import com.google.zxing.BinaryBitmap
+import com.google.zxing.MultiFormatReader
+import com.google.zxing.RGBLuminanceSource
+import com.google.zxing.common.HybridBinarizer
 import com.gun0912.tedpermission.PermissionListener
-import com.gun0912.tedpermission.TedPermission
+import com.gun0912.tedpermission.normal.TedPermission
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import kotlinx.coroutines.CoroutineScope
@@ -41,15 +49,22 @@ import java.io.File
 
 class MainActivity : AppCompatActivity(), DownloadListener {
     private lateinit var binding : ActivityMainBinding
+
+    private lateinit var photoPickerLauncher: ActivityResultLauncher<PickVisualMediaRequest>
+    private lateinit var barcodeLauncher: ActivityResultLauncher<ScanOptions>
+    private lateinit var recentLauncher: ActivityResultLauncher<Intent>
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
         downloadDir = File(getExternalFilesDir(null)?.path.plus("/ZxingSample"))
 
         checkPermission()
+
+        initActivityLauncher()
 
         registerReceiver(downloadCompleteReceiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
         when(intent.action) {
@@ -70,31 +85,63 @@ class MainActivity : AppCompatActivity(), DownloadListener {
         }
     }
 
+    override fun onPause() {
+        Log.d("onPause()")
+        super.onPause()
+    }
+
     override fun onDestroy() {
+        Log.d("onDestroy()")
         super.onDestroy()
         unregisterReceiver(downloadCompleteReceiver)
     }
 
     // activityForResult() is deprecated, replace with registerForActivityResult()
-    private val barcodeLauncher = registerForActivityResult(ScanContract()) {
-        it.contents?.let { content ->
-            processingData(content)
-        } ?: run {
-            Log.e("QR has no data.")
-            Toast.makeText(this, getString(R.string.str_unknown_error), Toast.LENGTH_SHORT).show()
-        }
-    }
+    private fun initActivityLauncher() {
+        photoPickerLauncher = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            uri?.let {
+                val inputSteam = contentResolver.openInputStream(uri)
+                val bitmap = BitmapFactory.decodeStream(inputSteam).apply {
+                    val pixels = IntArray(width * height)
+                    getPixels(pixels, 0, width, 0, 0, width, height)
+                    recycle()
+                    val source = RGBLuminanceSource(width, height, pixels)
+                    val bBitmap = BinaryBitmap(HybridBinarizer(source))
+                    val reader = MultiFormatReader()
+                    runCatching {
+                        val result = reader.decode(bBitmap)
+//                        Toast.makeText(this@MainActivity, result.text, Toast.LENGTH_SHORT).show()
+                        processingData(result.text)
 
-    private val recentLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        result.apply {
-            when(resultCode) {
-                RESULT_OK -> {
-                    Log.e("enter ActivityResult")
-                    data?.getStringExtra("RecentRecord")?.let { processingData(it) }
+                    }.onFailure {
+                        Toast.makeText(this@MainActivity, getString(R.string.str_qr_img_parse_error), Toast.LENGTH_SHORT).show()
+                    }
                 }
-                else -> {
-                    Log.e("Unexpected error!")
 
+
+            } ?: run { Toast.makeText(this@MainActivity, getString(R.string.str_unknown_error), Toast.LENGTH_SHORT).show() }
+        }
+
+        barcodeLauncher = registerForActivityResult(ScanContract()) {
+            it.contents?.let { content ->
+                processingData(content)
+            } ?: run {
+                Log.e("QR has no data.")
+                Toast.makeText(this, getString(R.string.str_unknown_error), Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        recentLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            result.apply {
+                when(resultCode) {
+                    RESULT_OK -> {
+                        Log.e("enter ActivityResult")
+                        data?.getStringExtra("RecentRecord")?.let { processingData(it) }
+                    }
+                    else -> {
+                        Log.e("Unexpected error!")
+
+                    }
                 }
             }
         }
@@ -126,7 +173,7 @@ class MainActivity : AppCompatActivity(), DownloadListener {
                 Toast.makeText(this@MainActivity, "권한 거부", Toast.LENGTH_SHORT).show()
             }
         }
-        TedPermission.with(this)
+        TedPermission.Builder()
                 .setPermissionListener(permissionListener) //Listener set
                 .setDeniedMessage(getString(R.string.str_permission_denied_msg)) //DeniedMessage (Do not granted)
                 .setPermissions(*permissionList) //Granted
@@ -148,7 +195,7 @@ class MainActivity : AppCompatActivity(), DownloadListener {
 
                 dlgBinding.apply {
                     btnCreateData.setOnClickListener {
-                        if (edtCreateData.text.toString() == "") {
+                        if (edtCreateData.text.isEmpty()) {
                             Toast.makeText(this@MainActivity, getString(R.string.str_do_not_empty_input), Toast.LENGTH_SHORT).show()
                             return@setOnClickListener
                         }
@@ -171,6 +218,15 @@ class MainActivity : AppCompatActivity(), DownloadListener {
                 }
 
                 dlg.show()
+            }
+            R.id.menu_read_image -> {
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    // PhotoPicker 출력
+                    photoPickerLauncher.launch(PickVisualMediaRequest())
+                } else {
+                    // SAF 출력
+
+                }
             }
             R.id.menu_recent -> {
                 recentLauncher.launch(Intent(this, RecentActivity::class.java))
@@ -207,6 +263,7 @@ class MainActivity : AppCompatActivity(), DownloadListener {
 
     private var time : Long = 0
     override fun onBackPressed() {
+        Log.d("onBackPressed()")
         if(binding.webView.canGoBack()) {
             binding.webView.goBack()
         }
@@ -216,6 +273,7 @@ class MainActivity : AppCompatActivity(), DownloadListener {
                 Toast.makeText(this@MainActivity, getString(R.string.str_one_more_press_exit), Toast.LENGTH_SHORT).show()
             }
             else if(System.currentTimeMillis() - time < 2000) {
+                Log.d("Finish the app")
                 this.finishAffinity()
             }
         }
@@ -233,12 +291,12 @@ class MainActivity : AppCompatActivity(), DownloadListener {
         }
     }
 
-    private fun requestPermission() : Boolean {
-        val permissions = arrayOf(
-            Manifest.permission.CAMERA
-        )
-        return TedPermission.isGranted(this, *permissions)
-    }
+//    private fun requestPermission() : Boolean {
+//        val permissions = arrayOf(
+//            Manifest.permission.CAMERA
+//        )
+//        return TedPermission.isGranted(this, *permissions)
+//    }
 
     private fun processingData(content: String) {
         Log.e("processingData()")
