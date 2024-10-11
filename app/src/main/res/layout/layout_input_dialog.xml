@@ -14,13 +14,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text = "@string/str_data_raw"
-            android:checked="true"/>
+            android:checked="true"
+            android:buttonTint="@color/black"/>
         <RadioButton
             android:id="@+id/rb_url"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text = "@string/str_data_url"
-            android:layout_marginStart="20dp" />
+            android:layout_marginStart="20dp"
+            android:buttonTint="@color/black" />
     </RadioGroup>
     <EditText
         android:id="@+id/edt_create_data"
@@ -35,5 +37,6 @@
         android:layout_height="wrap_content"
         android:text="@string/str_button_input"
         android:textColor="@color/white"
+        android:backgroundTint="@color/gray"
         android:layout_below="@+id/edt_create_data"/>
 </RelativeLayout>

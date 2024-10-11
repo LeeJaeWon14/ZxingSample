@@ -5,10 +5,12 @@
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="20dp"
     android:background = "@drawable/ripple_recent_click"
     android:layout_marginLeft="10dp"
-    android:layout_marginRight="10dp">
+    android:layout_marginRight="10dp"
+    android:layout_marginBottom="20dp"
+    android:paddingTop="15dp"
+    android:paddingBottom="15dp" >
     <TextView
         android:id="@+id/tv_time"
         style="@style/TextLabel"

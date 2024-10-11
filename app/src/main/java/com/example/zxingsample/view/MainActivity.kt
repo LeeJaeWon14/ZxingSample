@@ -20,7 +20,6 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import com.example.zxingsample.R
@@ -33,6 +32,7 @@ import com.example.zxingsample.room.RecordEntity
 import com.example.zxingsample.util.Log
 import com.example.zxingsample.util.MyDateUtil
 import com.example.zxingsample.util.replaceHttp
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.zxing.BinaryBitmap
 import com.google.zxing.MultiFormatReader
 import com.google.zxing.RGBLuminanceSource
@@ -59,6 +59,7 @@ class MainActivity : AppCompatActivity(), DownloadListener {
         setContentView(binding.root)
 
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        initWebView()
 
         downloadDir = File(getExternalFilesDir(null)?.path.plus("/ZxingSample"))
 
@@ -190,7 +191,8 @@ class MainActivity : AppCompatActivity(), DownloadListener {
             R.id.menu_create -> {
                 val dlgBinding = LayoutInputDialogBinding.inflate(layoutInflater)
                 val dlgView = dlgBinding.root
-                val dlg = AlertDialog.Builder(this).create()
+//                val mDlg = MaterialAlertDialogBuilder(this).create()
+                val dlg = MaterialAlertDialogBuilder(this).create()
                 dlg.setView(dlgView)
 
                 dlgBinding.apply {
@@ -297,11 +299,21 @@ class MainActivity : AppCompatActivity(), DownloadListener {
         saveRecord(content)
         try {
             if(content.startsWith("https://")) {
-                initWebView(content)
+                binding.apply {
+                    webView.visibility = View.VISIBLE
+                    tvQrResult.visibility = View.GONE
+                }
+
+                loadUrl(content)
             }
 
             else if(content.startsWith("http://")) {
-                initWebView(content.replaceHttp())
+                binding.apply {
+                    webView.visibility = View.VISIBLE
+                    tvQrResult.visibility = View.GONE
+                }
+
+                loadUrl(content.replaceHttp())
             }
             else {
                 binding.apply {
@@ -321,13 +333,8 @@ class MainActivity : AppCompatActivity(), DownloadListener {
         }
     }
 
-    private fun initWebView(url: String) {
-        Log.e("init with url >> $url")
-        binding.apply {
-            webView.visibility = View.VISIBLE
-            tvQrResult.visibility = View.GONE
-        }
-        //webView
+    private fun initWebView() {
+        Log.e("initWebView()")
         binding.webView.apply {
             webViewClient = MyWebViewClient()
             webChromeClient = MyChromeClient()
@@ -338,10 +345,12 @@ class MainActivity : AppCompatActivity(), DownloadListener {
                 cacheMode = WebSettings.LOAD_DEFAULT
                 setSupportZoom(true)
                 builtInZoomControls = true
+                textZoom = 95
             }
-            loadUrl(url)
         }
     }
+
+    private fun loadUrl(url: String) = binding.webView.loadUrl(url)
 
     private fun sslCheck(url: String) : Boolean = url.split("://")[0] == "https"
 
