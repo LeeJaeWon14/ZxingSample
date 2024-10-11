@@ -291,13 +291,6 @@ class MainActivity : AppCompatActivity(), DownloadListener {
         }
     }
 
-//    private fun requestPermission() : Boolean {
-//        val permissions = arrayOf(
-//            Manifest.permission.CAMERA
-//        )
-//        return TedPermission.isGranted(this, *permissions)
-//    }
-
     private fun processingData(content: String) {
         Log.e("processingData()")
         Log.e("content >> $content")
