@@ -53,6 +53,7 @@ class MainActivity : AppCompatActivity(), DownloadListener {
     private lateinit var photoPickerLauncher: ActivityResultLauncher<PickVisualMediaRequest>
     private lateinit var barcodeLauncher: ActivityResultLauncher<ScanOptions>
     private lateinit var recentLauncher: ActivityResultLauncher<Intent>
+    private lateinit var safLauncher: ActivityResultLauncher<String>
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -99,29 +100,9 @@ class MainActivity : AppCompatActivity(), DownloadListener {
 
     // activityForResult() is deprecated, replace with registerForActivityResult()
     private fun initActivityLauncher() {
-        photoPickerLauncher = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-            uri?.let {
-                val inputSteam = contentResolver.openInputStream(uri)
-                val bitmap = BitmapFactory.decodeStream(inputSteam).apply {
-                    val pixels = IntArray(width * height)
-                    getPixels(pixels, 0, width, 0, 0, width, height)
-                    recycle()
-                    val source = RGBLuminanceSource(width, height, pixels)
-                    val bBitmap = BinaryBitmap(HybridBinarizer(source))
-                    val reader = MultiFormatReader()
-                    runCatching {
-                        val result = reader.decode(bBitmap)
-//                        Toast.makeText(this@MainActivity, result.text, Toast.LENGTH_SHORT).show()
-                        processingData(result.text)
+        photoPickerLauncher = registerForActivityResult(ActivityResultContracts.PickVisualMedia(), qrImageParse)
 
-                    }.onFailure {
-                        Toast.makeText(this@MainActivity, getString(R.string.str_qr_img_parse_error), Toast.LENGTH_SHORT).show()
-                    }
-                }
-
-
-            } ?: run { Toast.makeText(this@MainActivity, getString(R.string.str_unknown_error), Toast.LENGTH_SHORT).show() }
-        }
+        safLauncher = registerForActivityResult(ActivityResultContracts.GetContent(), qrImageParse)
 
         barcodeLauncher = registerForActivityResult(ScanContract()) {
             it.contents?.let { content ->
@@ -148,6 +129,30 @@ class MainActivity : AppCompatActivity(), DownloadListener {
         }
     }
 
+    private val qrImageParse = { uri: Uri? ->
+        uri?.let {
+            val inputSteam = contentResolver.openInputStream(uri)
+            val bitmap = BitmapFactory.decodeStream(inputSteam).apply {
+                val pixels = IntArray(width * height)
+                getPixels(pixels, 0, width, 0, 0, width, height)
+                recycle()
+                val source = RGBLuminanceSource(width, height, pixels)
+                val bBitmap = BinaryBitmap(HybridBinarizer(source))
+                val reader = MultiFormatReader()
+                runCatching {
+                    val result = reader.decode(bBitmap)
+//                        Toast.makeText(this@MainActivity, result.text, Toast.LENGTH_SHORT).show()
+                    processingData(result.text)
+
+                }.onFailure {
+                    Toast.makeText(this@MainActivity, getString(R.string.str_qr_img_parse_error), Toast.LENGTH_SHORT).show()
+                }
+            }
+
+
+        } ?: run { Toast.makeText(this@MainActivity, getString(R.string.str_unknown_error), Toast.LENGTH_SHORT).show() }
+    }
+
     private fun qrInit() {
         val qrOptions = ScanOptions().apply {
             setPrompt(getString(R.string.str_qr_prompt))
@@ -161,9 +166,7 @@ class MainActivity : AppCompatActivity(), DownloadListener {
     //출처 : https://github.com/ParkSangGwon/TedPermission
     private fun checkPermission() {
         val permissionList = arrayOf(
-            Manifest.permission.CAMERA,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.READ_EXTERNAL_STORAGE
+            Manifest.permission.CAMERA
         )
         val permissionListener : PermissionListener = object : PermissionListener {
             override fun onPermissionGranted() { //권한 있음
@@ -191,9 +194,11 @@ class MainActivity : AppCompatActivity(), DownloadListener {
             R.id.menu_create -> {
                 val dlgBinding = LayoutInputDialogBinding.inflate(layoutInflater)
                 val dlgView = dlgBinding.root
-//                val mDlg = MaterialAlertDialogBuilder(this).create()
-                val dlg = MaterialAlertDialogBuilder(this).create()
-                dlg.setView(dlgView)
+                val dlg = MaterialAlertDialogBuilder(this).create().apply {
+                    setView(dlgView)
+                    setCanceledOnTouchOutside(false)
+                    show()
+                }
 
                 dlgBinding.apply {
                     btnCreateData.setOnClickListener {
@@ -218,8 +223,6 @@ class MainActivity : AppCompatActivity(), DownloadListener {
                         dlg.dismiss()
                     }
                 }
-
-                dlg.show()
             }
             R.id.menu_read_image -> {
                 if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -227,7 +230,7 @@ class MainActivity : AppCompatActivity(), DownloadListener {
                     photoPickerLauncher.launch(PickVisualMediaRequest())
                 } else {
                     // SAF 출력
-
+                    safLauncher.launch("image/*")
                 }
             }
             R.id.menu_recent -> {
