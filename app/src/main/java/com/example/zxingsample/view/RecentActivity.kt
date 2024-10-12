@@ -29,7 +29,7 @@ class RecentActivity : AppCompatActivity() {
 
         val selectRoutine = CoroutineScope(Dispatchers.IO).async {
             MyRoomDatabase.getInstance(this@RecentActivity).getRoomDAO()
-                .selectRecord()
+                .selectRecord().sortedByDescending { it.time }
         }
 
         binding.apply {

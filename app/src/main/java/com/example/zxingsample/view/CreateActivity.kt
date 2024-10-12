@@ -35,9 +35,9 @@ class CreateActivity : AppCompatActivity() {
             title = getString(R.string.str_create_qr_label)
         }
 
-        val bundle = intent.getBundleExtra("dataBundle")
-        bundle?.let {
-            createQR(binding.ivQr, it.getString("data"))
+        val data = intent.getStringExtra("dataBundle")
+        data?.let {
+            createQR(binding.ivQr, it)
         } ?: run {
             Toast.makeText(this@CreateActivity, getString(R.string.str_not_found_data), Toast.LENGTH_SHORT).show()
             Handler(Looper.getMainLooper()).postDelayed(Runnable {

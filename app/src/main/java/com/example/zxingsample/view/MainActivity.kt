@@ -85,6 +85,35 @@ class MainActivity : AppCompatActivity(), DownloadListener {
         binding.btnQr.setOnClickListener {
             qrInit()
         }
+
+        checkShare(intent)
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+
+        intent?.let { checkShare(it) }
+    }
+
+    private fun checkShare(intent: Intent) {
+        if(intent.action == Intent.ACTION_SEND) {
+            when (intent.type) {
+                "image/*" -> {
+                    val uri = intent.clipData?.getItemAt(0)?.uri
+                    qrImageParse(uri)
+                }
+                "text/plain" -> {
+                    val text = intent.getStringExtra(Intent.EXTRA_TEXT)
+                    startActivity(
+                        Intent(
+                            this@MainActivity,
+                            CreateActivity::class.java
+                        ).putExtra("dataBundle", text)
+                    )
+                }
+            }
+
+        }
     }
 
     override fun onPause() {
@@ -211,14 +240,11 @@ class MainActivity : AppCompatActivity(), DownloadListener {
                             R.id.rb_url -> "https://${edtCreateData.text.toString()}"
                             else -> ""
                         }
-                        val bundle = Bundle().apply {
-                            putString("data", data)
-                        }
                         startActivity(
                             Intent(
                                 this@MainActivity,
                                 CreateActivity::class.java
-                            ).putExtra("dataBundle", bundle)
+                            ).putExtra("dataBundle", data)
                         )
                         dlg.dismiss()
                     }
