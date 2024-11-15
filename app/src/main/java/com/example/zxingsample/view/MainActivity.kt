@@ -82,8 +82,13 @@ class MainActivity : AppCompatActivity(), DownloadListener {
                 }
             }
         }
-        binding.btnQr.setOnClickListener {
-            qrInit()
+        binding.apply {
+            btnQr.setOnClickListener {
+                qrInit()
+            }
+            ivRefresh.setOnClickListener {
+                webView.reload()
+            }
         }
 
         checkShare(intent)
@@ -330,6 +335,7 @@ class MainActivity : AppCompatActivity(), DownloadListener {
             if(content.startsWith("https://")) {
                 binding.apply {
                     webView.visibility = View.VISIBLE
+                    llViewUrl.visibility = View.VISIBLE
                     tvQrResult.visibility = View.GONE
                 }
 
@@ -339,6 +345,7 @@ class MainActivity : AppCompatActivity(), DownloadListener {
             else if(content.startsWith("http://")) {
                 binding.apply {
                     webView.visibility = View.VISIBLE
+                    llViewUrl.visibility = View.VISIBLE
                     tvQrResult.visibility = View.GONE
                 }
 
@@ -347,6 +354,7 @@ class MainActivity : AppCompatActivity(), DownloadListener {
             else {
                 binding.apply {
                     webView.visibility = View.GONE
+                    llViewUrl.visibility = View.GONE
                     tvQrResult.visibility = View.VISIBLE
                     tvQrResult.text = content
                 }
@@ -365,9 +373,6 @@ class MainActivity : AppCompatActivity(), DownloadListener {
     private fun initWebView() {
         Log.e("initWebView()")
         binding.webView.apply {
-            webViewClient = MyWebViewClient()
-            webChromeClient = MyChromeClient()
-            setDownloadListener(this@MainActivity)
             settings.apply {
                 javaScriptEnabled = true
                 loadWithOverviewMode = true
@@ -375,7 +380,11 @@ class MainActivity : AppCompatActivity(), DownloadListener {
                 setSupportZoom(true)
                 builtInZoomControls = true
                 textZoom = 95
+                mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
             }
+            webViewClient = MyWebViewClient(binding.progressBar, binding.tvUrl)
+            webChromeClient = MyChromeClient()
+            setDownloadListener(this@MainActivity)
         }
     }
 

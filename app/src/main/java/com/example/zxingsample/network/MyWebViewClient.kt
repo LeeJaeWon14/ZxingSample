@@ -5,10 +5,13 @@ import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.ProgressBar
+import android.widget.TextView
+import androidx.core.view.isVisible
 import com.example.zxingsample.util.Log
 import com.example.zxingsample.util.replaceHttp
 
-class MyWebViewClient : WebViewClient() {
+class MyWebViewClient(val progressBar: ProgressBar, val tvUrl: TextView) : WebViewClient() {
     override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
         Log.e("onShouldOverrideUrlLoading()")
 //        return super.shouldOverrideUrlLoading(view, request)
@@ -23,12 +26,17 @@ class MyWebViewClient : WebViewClient() {
         super.onPageStarted(view, url, favicon)
         Log.e("onPageStarted()")
         Log.e("page start >> $url")
+
+        progressBar.isVisible = true
+        tvUrl.text = url
     }
 
     override fun onPageFinished(view: WebView?, url: String?) {
         super.onPageFinished(view, url)
         Log.e("onPageFinished()")
         Log.e("page finish >> $url")
+
+        progressBar.isVisible = false
     }
 
     override fun onReceivedError(
