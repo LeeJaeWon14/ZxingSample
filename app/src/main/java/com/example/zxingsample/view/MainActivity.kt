@@ -132,10 +132,16 @@ class MainActivity : AppCompatActivity(), DownloadListener {
         unregisterReceiver(downloadCompleteReceiver)
     }
 
+    val uriTest = { uri: Uri ->
+
+    }
+
     // activityForResult() is deprecated, replace with registerForActivityResult()
     private fun initActivityLauncher() {
+//        photoPickerLauncher = registerForActivityResult(ActivityResultContracts.PickVisualMedia(), qrImageParse)
         photoPickerLauncher = registerForActivityResult(ActivityResultContracts.PickVisualMedia(), qrImageParse)
 
+//        safLauncher = registerForActivityResult(ActivityResultContracts.GetContent(), qrImageParse)
         safLauncher = registerForActivityResult(ActivityResultContracts.GetContent(), qrImageParse)
 
         barcodeLauncher = registerForActivityResult(ScanContract()) {
