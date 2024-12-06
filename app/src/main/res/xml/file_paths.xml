@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- 앱의 내부 저장소 경로 -->
+    <files-path
+        name="internal_files"
+        path="." />
+
+    <!-- 앱의 캐시 디렉토리 -->
+    <cache-path
+        name="cache_files"
+        path="." />
+
+    <!-- 외부 저장소 경로 (예: Environment.getExternalStorageDirectory()) -->
+    <external-path
+        name="external_files"
+        path="." />
+</paths>

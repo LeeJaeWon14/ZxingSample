@@ -1,8 +1,8 @@
 package com.example.zxingsample.view
 
-import android.content.Context
+import android.content.ContentResolver
+import android.content.ContentValues
 import android.content.Intent
-import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
@@ -14,13 +14,15 @@ import android.view.MenuItem
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
 import androidx.core.graphics.drawable.toBitmap
 import com.example.zxingsample.R
 import com.example.zxingsample.databinding.ActivityCreateBinding
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
 import com.journeyapps.barcodescanner.BarcodeEncoder
-import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
 
 class CreateActivity : AppCompatActivity() {
     private lateinit var binding : ActivityCreateBinding
@@ -28,7 +30,6 @@ class CreateActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityCreateBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         supportActionBar?.apply {
             setDisplayHomeAsUpEnabled(true)
@@ -67,7 +68,7 @@ class CreateActivity : AppCompatActivity() {
             R.id.menu_share -> {
                 val shareIntent = Intent(Intent.ACTION_SEND)
                 val bitmap = binding.ivQr.drawable.toBitmap()
-                val uri = getImageUri(this, bitmap)
+                val uri = getImageUri(bitmap)
                 shareIntent.setType("image/*")
                 shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
                 startActivity(Intent.createChooser(shareIntent, "Shared QR code"))
@@ -75,12 +76,14 @@ class CreateActivity : AppCompatActivity() {
             R.id.menu_save -> {
                 val bitmap = binding.ivQr.drawable.toBitmap()
                 // insertImage() was deprecated. Find the other way.
-                MediaStore.Images.Media.insertImage(
-                    this.contentResolver,
-                    bitmap,
-                    intent.getBundleExtra("dataBundle")?.get("data").toString(),
-                    ""
-                )
+//                MediaStore.Images.Media.insertImage(
+//                    this.contentResolver,
+//                    bitmap,
+//                    intent.getBundleExtra("dataBundle")?.get("data").toString(),
+//                    ""
+//                )
+                saveQr(contentResolver, bitmap)
+
                 Toast.makeText(this, getString(R.string.str_save_success), Toast.LENGTH_SHORT).show()
             }
             android.R.id.home -> {
@@ -91,15 +94,32 @@ class CreateActivity : AppCompatActivity() {
         return true
     }
 
-    private fun getImageUri(context: Context, inImage: Bitmap): Uri? {
-        val bytes = ByteArrayOutputStream()
-        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
-        val path: String = MediaStore.Images.Media.insertImage(
-            context.getContentResolver(),
-            inImage,
-            "Title",
-            null
-        )
-        return Uri.parse(path)
+    private fun getImageUri(inImage: Bitmap): Uri? {
+        val tempFile = File(filesDir, "${System.currentTimeMillis()}.png")
+        val stream = FileOutputStream(tempFile)
+        inImage.compress(Bitmap.CompressFormat.PNG, 100, stream)
+        return FileProvider.getUriForFile(this, packageName.plus(".provider"), tempFile)
+    }
+
+    private fun saveQr(contentResolver: ContentResolver, bitmap: Bitmap) {
+        val contentValues = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, System.currentTimeMillis())
+            put(MediaStore.Images.Media.MIME_TYPE, "image/png")
+            put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/QR Code")
+            put(MediaStore.Images.Media.IS_PENDING, 1)
+        }
+
+        contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)?.let { uri ->
+            contentResolver.openOutputStream(uri)?.use { ops ->
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, ops)
+                ops.flush()
+            }
+
+            contentValues.run {
+                clear()
+                put(MediaStore.Images.Media.IS_PENDING, 0)
+            }
+            contentResolver.update(uri, contentValues, null, null)
+        }
     }
 }
